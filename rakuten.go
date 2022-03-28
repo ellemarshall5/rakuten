@@ -11,38 +11,32 @@ import (
 )
 
 type Foo struct {
-	name string `json:"name"`
-	id   string `json:"id"`
+	Name string `json:"name"`
+	Id   string `json:"id"`
 }
 
-type FooRecords []Foo
-
-var records = FooRecords{
-	{
-		name: "test",
-		id:   "test",
-	},
-}
+var records []Foo
 
 func postFoo(w http.ResponseWriter, r *http.Request) {
-	myuuid := uuid.NewV4()
-	var newFoo Foo
+
+	myuuid := uuid.NewV4().String()
 	reqBody, _ := ioutil.ReadAll(r.Body)
-
-	log.Print(myuuid)
-
-	json.Unmarshal(reqBody, &newFoo)
-	records = append(records, newFoo)
+	var foo Foo
+	json.Unmarshal(reqBody, &foo)
+	f := new(Foo)
+	f.Name = (string(reqBody))
+	f.Id = myuuid
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(newFoo)
+	json.NewEncoder(w).Encode(foo)
+
 }
 
 func getFoo(w http.ResponseWriter, r *http.Request) {
 	key := mux.Vars(r)["id"]
 
 	for _, singleFoo := range records {
-		if singleFoo.id == key {
+		if singleFoo.Id == key {
 			json.NewEncoder(w).Encode(singleFoo)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
@@ -54,7 +48,7 @@ func deleteFoo(w http.ResponseWriter, r *http.Request) {
 	key := mux.Vars(r)["id"]
 
 	for i, singleFoo := range records {
-		if singleFoo.id == key {
+		if singleFoo.Id == key {
 			records = append(records[:i], records[i+1:]...)
 			w.WriteHeader(http.StatusNoContent)
 		} else {
@@ -65,7 +59,6 @@ func deleteFoo(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
 	newRouter := mux.NewRouter().StrictSlash(true)
 	newRouter.HandleFunc("/foo", postFoo).Methods("POST")
 	newRouter.HandleFunc("/foo{id}", getFoo).Methods("GET")
