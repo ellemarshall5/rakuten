@@ -78,5 +78,4 @@ func main() {
 	newRouter.HandleFunc("/foo/{id}", getFoo).Methods("GET")
 	newRouter.HandleFunc("/foo/{id}", deleteFoo).Methods("DELETE")
 	log.Fatal(http.ListenAndServe(":8080", newRouter))
-
 }
